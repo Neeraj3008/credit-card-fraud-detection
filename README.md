@@ -1,229 +1,233 @@
-# Credit Card Fraud Detection
+# Credit Card Fraud Detection using Machine Learning
 
-A machine learning project for detecting fraudulent credit card transactions using multiple classification models and techniques for handling highly imbalanced data.
+Detecting fraudulent credit card transactions on a highly imbalanced dataset, with a focus on Recall and F1-score rather than raw accuracy.
+
+**Author:** Neeraj Patil
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Problem Statement](#problem-statement)
+- [Dataset](#dataset)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Methodology](#methodology)
+- [Results](#results)
+- [Key Findings](#key-findings)
+- [Limitations](#limitations)
+- [Future Work](#future-work)
+- [Tech Stack](#tech-stack)
+- [License](#license)
+
+---
 
 ## Overview
 
-Credit card fraud detection is a highly imbalanced classification problem. In this dataset, fraudulent transactions represent only a very small fraction of all transactions.
+Credit card fraud is one of the biggest challenges faced by financial institutions. Fraudulent transactions are extremely rare compared to legitimate ones, which makes fraud detection a severely imbalanced classification problem.
 
-This project compares different machine learning approaches and evaluates them using metrics that are more meaningful for fraud detection, particularly:
+This project builds and compares five models — from a naive baseline through to a tuned gradient boosting model — and evaluates each on metrics that actually matter for fraud: Precision, Recall, F1-score, and ROC-AUC.
 
-- Precision
-- Recall
-- F1-Score
-- ROC-AUC
+---
 
-The project also explores **SMOTE** for handling class imbalance and **GridSearchCV** for XGBoost hyperparameter tuning.
+## Problem Statement
+
+Only 0.173% of transactions in the dataset are fraudulent. A model that predicts "not fraud" for every single transaction would score 99.83% accuracy while catching zero fraud. The goal is therefore to **maximise the number of fraudulent transactions caught (Recall) without generating an unmanageable volume of false alarms (Precision)**.
+
+---
 
 ## Dataset
 
-The project uses the [Credit Card Fraud Detection Dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) from Kaggle.
+| Property | Value |
+| --- | --- |
+| Source | Kaggle — Credit Card Fraud Detection |
+| Rows | 284,807 |
+| Columns | 31 |
+| Features | `Time`, `Amount`, `V1`–`V28` (PCA-transformed) |
+| Target | `Class` (0 = genuine, 1 = fraud) |
+| Genuine transactions | 284,315 (99.827%) |
+| Fraudulent transactions | 492 (0.173%) |
+| Missing values | None |
+| Duplicate rows | 1,081 |
 
-### Dataset Statistics
+`V1`–`V28` are anonymised principal components; the original features were not released for confidentiality reasons. `Time` and `Amount` are the only two untransformed features.
 
-- **Total transactions:** 284,807
-- **Legitimate transactions:** 284,315
-- **Fraudulent transactions:** 492
-- **Fraud rate:** ~0.173%
-- **Target variable:** `Class`
+---
 
-Where:
+## Project Structure
 
-- `0` → Legitimate transaction
-- `1` → Fraudulent transaction
-
-The dataset contains transactions made by European cardholders during September 2013 over a period of two days.
-
-Most features are anonymized PCA-transformed variables (`V1`–`V28`), along with `Time` and `Amount`.
-
-## Project Workflow
-
-The notebook follows the following workflow:
-
-1. Dataset inspection
-2. Exploratory data analysis
-3. Class imbalance analysis
-4. Data preprocessing
-5. Stratified train-test split
-6. Baseline evaluation
-7. Model training
-8. SMOTE experimentation
-9. XGBoost hyperparameter tuning
-10. Model comparison and evaluation
-
-## Exploratory Data Analysis
-
-The notebook performs analysis of:
-
-- Dataset structure and statistics
-- Class distribution
-- Transaction amounts
-- Feature correlations
-- Fraudulent vs. legitimate transactions
-- Feature importance
-- ROC curves
-
-The analysis highlights the severe class imbalance in the dataset and why accuracy alone is not sufficient for evaluating fraud detection models.
-
-## Data Preprocessing
-
-The dataset was split into training and testing sets using an **80/20 stratified split** to preserve the proportion of fraudulent transactions in both sets.
-
-The preprocessing workflow includes:
-
-- Checking for missing values
-- Separating features and target
-- Feature scaling where required
-- Stratified train-test splitting
-
-## Models
-
-### 1. Dummy Classifier
-
-A `DummyClassifier` was used as a baseline.
-
-It achieved approximately **99.83% accuracy**, while detecting no fraudulent transactions.
-
-This provides a baseline demonstrating why accuracy can be misleading for highly imbalanced datasets.
-
-### 2. Logistic Regression
-
-Logistic Regression was used as a baseline machine learning model.
-
-| Metric | Score |
-|---|---:|
-| Accuracy | 99.91% |
-| Precision | 82.67% |
-| Recall | 63.27% |
-| F1-Score | 71.68% |
-| ROC-AUC | 81.62% |
-
-### 3. Random Forest
-
-A Random Forest classifier with 50 trees was trained to capture non-linear relationships in the transaction data.
-
-| Metric | Score |
-|---|---:|
-| Accuracy | 99.96% |
-| Precision | **94.12%** |
-| Recall | 81.63% |
-| F1-Score | **87.43%** |
-| ROC-AUC | 90.81% |
-
-### 4. Random Forest + SMOTE
-
-SMOTE was applied to the training data to address the severe class imbalance.
-
-| Metric | Score |
-|---|---:|
-| Accuracy | 99.94% |
-| Precision | 83.51% |
-| Recall | **82.65%** |
-| F1-Score | 83.08% |
-| ROC-AUC | **91.31%** |
-
-SMOTE increased recall compared with the original Random Forest model, while precision and F1-score decreased.
-
-### 5. XGBoost
-
-XGBoost was evaluated as a boosting-based model.
-
-Initial parameters:
-
-```text
-n_estimators = 100
-learning_rate = 0.1
-max_depth = 6
-
-Results:
-
-Metric	Score
-Accuracy	99.95%
-Precision	91.57%
-Recall	77.55%
-F1-Score	83.98%
-ROC-AUC	88.77%
-6. Tuned XGBoost
-
-GridSearchCV was used to search for better XGBoost hyperparameters.
-
-The best configuration found was:
-
-learning_rate = 0.1
-max_depth = 5
-n_estimators = 200
-
-Results:
-
-Metric	Score
-Accuracy	99.95%
-Precision	90.59%
-Recall	78.57%
-F1-Score	84.15%
-ROC-AUC	89.28%
-Model Comparison
-Model	Precision	Recall	F1-Score	ROC-AUC
-Dummy Classifier	0.00%	0.00%	0.00%	—
-Logistic Regression	82.67%	63.27%	71.68%	81.62%
-Random Forest	94.12%	81.63%	87.43%	90.81%
-Random Forest + SMOTE	83.51%	82.65%	83.08%	91.31%
-XGBoost	91.57%	77.55%	83.98%	88.77%
-Tuned XGBoost	90.59%	78.57%	84.15%	89.28%
-Key Observations
-The dataset is highly imbalanced, with fraud representing only ~0.173% of transactions.
-The Dummy Classifier demonstrates that very high accuracy can be achieved without detecting any fraud.
-Random Forest achieved a 94.12% precision and 87.43% F1-score.
-Applying SMOTE increased Random Forest recall from 81.63% to 82.65%.
-SMOTE also achieved the highest ROC-AUC among the evaluated models at 91.31%.
-Hyperparameter tuning improved the XGBoost F1-score from 83.98% to 84.15%.
-Precision, recall, F1-score and ROC-AUC provide more useful insight into fraud detection performance than accuracy alone.
-Feature Analysis
-
-Feature importance was analyzed using the Random Forest model to identify features that contributed most to its predictions.
-
-ROC curves were also generated to compare model performance across different classification thresholds.
-
-Technologies Used
-Python
-NumPy
-Pandas
-Matplotlib
-Seaborn
-Scikit-learn
-Imbalanced-learn
-XGBoost
-Jupyter Notebook
-Project Structure
+```
 credit-card-fraud-detection/
-│
-├── notebooks/
-│   └── credit card fraud detection.ipynb
-│
+├── credit_card_fraud_detection.ipynb   # Main notebook — EDA, modelling, evaluation
+├── data/
+│   └── creditcard.csv                  # Dataset (not committed — see Usage)
 ├── requirements.txt
 └── README.md
-How to Run
-Clone the repository
-git clone https://github.com/neerajpatil3008/credit-card-fraud-detection.git
+```
+
+---
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/<your-username>/credit-card-fraud-detection.git
 cd credit-card-fraud-detection
-Install dependencies
+
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-Run the notebook
-jupyter notebook
+```
 
-Open:
+**requirements.txt**
 
-credit card fraud detection.ipynb
+```
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+imbalanced-learn
+xgboost
+jupyter
+```
 
-The notebook contains the complete data analysis, preprocessing, model training, SMOTE experimentation, hyperparameter tuning, and evaluation workflow.
+---
 
-Future Improvements
-Experiment with additional ensemble models
-Optimize classification thresholds based on fraud detection requirements
-Add SHAP-based model explainability
-Evaluate the models on newer transaction datasets
-Develop a real-time fraud detection pipeline
-Author
+## Usage
 
-Neeraj Patil
+1. Download `creditcard.csv` from Kaggle and place it in the `data/` folder.
+2. Update the file path in the data-loading cell of the notebook:
 
-GitHub:
+   ```python
+   df = pd.read_csv("data/creditcard.csv")
+   ```
+
+3. Launch the notebook and run all cells:
+
+   ```bash
+   jupyter notebook credit_card_fraud_detection.ipynb
+   ```
+
+Note that the notebook was originally written on Kaggle, so the default path points at `/kaggle/input/`.
+
+---
+
+## Methodology
+
+### 1. Exploratory Data Analysis
+- Class distribution plot confirming the 99.83 / 0.17 imbalance
+- Distribution of transaction `Amount` (heavily right-skewed)
+- Boxplot of `Amount` by class to test for a fraud–amount relationship
+- Correlation heatmap and per-feature correlation with the target
+
+### 2. Train / Test Split
+An 80/20 split with `stratify=y`, so the fraud ratio is preserved in both sets.
+
+| Split | Rows | Genuine | Fraud |
+| --- | --- | --- | --- |
+| Train | 227,845 | 227,451 | 394 |
+| Test | 56,962 | 56,864 | 98 |
+
+### 3. Feature Scaling
+`StandardScaler` is applied for Logistic Regression, which is sensitive to feature magnitude. Tree-based models (Random Forest, XGBoost) are trained on the unscaled data since they are scale-invariant.
+
+### 4. Models Trained
+
+| # | Model | Type | Notes |
+| --- | --- | --- | --- |
+| 1 | Dummy Classifier | Baseline | `strategy="most_frequent"` |
+| 2 | Logistic Regression | Linear | `max_iter=1000`, scaled input |
+| 3 | Random Forest | Bagging ensemble | `n_estimators=50` |
+| 4 | Random Forest + SMOTE | Bagging + oversampling | Minority class upsampled to 227,451 |
+| 5 | XGBoost | Boosting ensemble | `n_estimators=100`, `lr=0.1`, `max_depth=6` |
+| 6 | XGBoost (tuned) | Boosting ensemble | `GridSearchCV`, 3-fold, scored on F1 |
+
+### 5. Hyperparameter Tuning
+Grid search over `n_estimators` [100, 200], `max_depth` [3, 5, 7], and `learning_rate` [0.01, 0.1].
+
+Best parameters: `learning_rate=0.1`, `max_depth=5`, `n_estimators=200` (CV F1 = 0.8411).
+
+---
+
+## Results
+
+All metrics are on the held-out test set (56,962 transactions, 98 of them fraudulent).
+
+| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+| --- | --- | --- | --- | --- | --- |
+| Dummy Classifier | 0.9983 | 0.0000 | 0.0000 | 0.0000 | — |
+| Logistic Regression | 0.9991 | 0.8267 | 0.6327 | 0.7168 | 0.8162 |
+| **Random Forest** | **0.9996** | **0.9412** | 0.8163 | **0.8743** | 0.9081 |
+| Random Forest + SMOTE | 0.9994 | 0.8351 | **0.8265** | 0.8308 | **0.9131** |
+| XGBoost (default) | 0.9995 | 0.9157 | 0.7755 | 0.8398 | 0.8877 |
+| XGBoost (tuned) | 0.9995 | 0.9059 | 0.7857 | 0.8415 | 0.8928 |
+
+### Fraud cases caught (out of 98)
+
+| Model | Caught | Missed |
+| --- | --- | --- |
+| Dummy Classifier | 0 | 98 |
+| Logistic Regression | ~62 | ~36 |
+| Random Forest | ~80 | ~18 |
+| Random Forest + SMOTE | ~81 | ~17 |
+| XGBoost (tuned) | ~77 | ~21 |
+
+**Final model: Random Forest**, selected for the best overall balance of Precision, Recall, and F1-score.
+
+---
+
+## Key Findings
+
+**Accuracy is meaningless here.** The Dummy Classifier reached 99.83% accuracy by predicting "genuine" every time, catching zero fraud. Any model on this dataset will look excellent on accuracy alone.
+
+**Non-linear models clearly beat the linear baseline.** Random Forest lifted Recall from 63.3% to 81.6% over Logistic Regression — roughly 18 additional frauds caught out of 98, which is a substantial difference at a bank's transaction volume.
+
+**SMOTE traded precision for recall.** Oversampling the minority class raised Recall by about 1 percentage point (one extra fraud caught) but dropped Precision from 94.1% to 83.5%, pulling F1 down by around 4 points. Random Forest was already robust enough that synthetic samples added more false positives than genuine signal.
+
+**More complexity did not mean better performance.** XGBoost, even after grid search, did not overtake Random Forest. Likely reasons: the search grid was small relative to XGBoost's full parameter space, the PCA-transformed features are already clean and low-noise, and the dataset is not large enough for boosting to pull ahead.
+
+**ROC-AUC alone can mislead on imbalanced data.** Random Forest + SMOTE posted the highest ROC-AUC while having a clearly worse precision/F1 profile, which is why the final model choice was based on the full metric picture rather than a single number.
+
+**Feature importance.** Random Forest impurity-based importances identify which of the PCA components contribute most to fraud detection, though the anonymisation means these cannot be mapped back to real-world transaction attributes.
+
+---
+
+## Limitations
+
+- The 1,081 duplicate rows were identified but not removed, so a small amount of leakage between train and test is possible.
+- Feature anonymisation prevents any domain-level interpretation of the importance rankings.
+- The classification threshold was left at the default 0.5; no cost-sensitive threshold tuning was performed.
+- Model selection used a single train/test split rather than repeated cross-validation, so the reported metrics carry some variance.
+
+---
+
+## Future Work
+
+1. Explore LightGBM and CatBoost for tabular fraud detection.
+2. Apply SHAP for model explainability.
+3. Experiment with threshold optimisation for different business requirements.
+4. Build a real-time fraud detection pipeline using streaming transaction data.
+5. Investigate deep learning and transformer-based fraud detection models.
+
+---
+
+## Tech Stack
+
+| Category | Tools |
+| --- | --- |
+| Language | Python 3.12 |
+| Data handling | NumPy, Pandas |
+| Visualisation | Matplotlib, Seaborn |
+| Modelling | scikit-learn, XGBoost |
+| Imbalance handling | imbalanced-learn (SMOTE) |
+| Environment | Jupyter Notebook / Kaggle |
+
+---
+
+
